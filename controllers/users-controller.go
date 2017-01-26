@@ -22,7 +22,7 @@ func NewUserController(db *gorm.DB) *UserController {
 }
 
 func (uc UserController) GetAllUsers(w http.ResponseWriter, r *http.Request) {
-    u := &models.User{}
+    u := [] models.User{}
     uc.dbConn.Find(&u)
     uj, _ := json.Marshal(u)
 

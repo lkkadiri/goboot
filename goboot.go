@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"github.com/gorilla/mux"
 	"github.com/lkkadiri/goboot/config"
+	"github.com/lkkadiri/goboot/sockets"
   "github.com/lkkadiri/goboot/controllers"
 )
 
@@ -34,6 +35,8 @@ func main() {
 	s.HandleFunc("/{id:[0-9]+}", uc.GetUser).Methods("GET")
 	s.HandleFunc("/{id:[0-9]+}", uc.RemoveUser).Methods("DELETE")
 
+  ws := r.PathPrefix("/users/ws").Subrouter()
+	ws.HandleFunc("", socket.Echo).Methods("GET")
 	// Bind to a port and pass our router in
 	log.Print(http.ListenAndServe(":8000", r))
 
