@@ -1,6 +1,8 @@
 package socket
 
-import (
+import
+(
+  "fmt"
 	"log"
 	"net/http"
   "github.com/gorilla/websocket"
@@ -10,11 +12,22 @@ var upgrader = websocket.Upgrader{
   CheckOrigin: func(r *http.Request) bool { return true },
 }
 
-type msg struct {
-	Num int
+var conn *websocket.Conn
+
+type Notification struct{
+  Id  int `json:"id"`
+  Uuid  string `json:"uuid"`
+  AssetId  int `json:"assetId"`
+  Type  string `json:"type"`
+  EventType     string `json:"eventType"`
+  DateCreated     string `json:"dateCreated"`
+  DateUpdated     string `json:"dateUpdated"`
+  EventPayload struct {
+      Body string `json:"body"`
+    } `json:"eventPayload"`
 }
 
-func Echo(w http.ResponseWriter, r *http.Request) {
+func WsHandler(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Print("upgrade:", err)
@@ -22,17 +35,16 @@ func Echo(w http.ResponseWriter, r *http.Request) {
 	}
 	defer conn.Close()
 	for {
-		mt, message, err := conn.ReadMessage()
-		if err != nil {
-			log.Println("read:", err)
-			break
-		}
-		log.Printf("recv: %s", message)
-		err = conn.WriteMessage(mt, message)
+    m := Notification{}
 
+		err := conn.ReadJSON(&m)
 		if err != nil {
-			log.Println("write:", err)
-			break
+			fmt.Println("Error reading json.", err)
 		}
-	}
+
+		fmt.Printf("Got message: %#v\n", m)
+
+		if err = conn.WriteJSON(m); err != nil {
+			fmt.Println(err)
+		}	}
 }
